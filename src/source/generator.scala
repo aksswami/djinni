@@ -83,7 +83,9 @@ package object generatorTools {
                    skipGeneration: Boolean,
                    yamlOutFolder: Option[File],
                    yamlOutFile: Option[String],
-                   yamlPrefix: String)
+                   yamlPrefix: String,
+                   cppUseStringTTypedef: Boolean,
+                   cppStringTypedefHeader: Option[String])
 
   def preComma(s: String) = {
     if (s.isEmpty) s else ", " + s

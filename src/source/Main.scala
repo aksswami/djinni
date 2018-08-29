@@ -84,6 +84,9 @@ object Main {
     var yamlOutFile: Option[String] = None
     var yamlPrefix: String = ""
 
+    var cppUseStringTTypedef: Boolean = false
+    var cppStringTypedefHeader: Option[String] = None
+
     val argParser = new scopt.OptionParser[Unit]("djinni") {
 
       def identStyle(optionName: String, update: IdentConverter => Unit) = {
@@ -206,6 +209,10 @@ object Main {
         .text("Optional file in which to write the list of output files produced.")
       opt[Boolean]("skip-generation").valueName("<true/false>").foreach(x => skipGeneration = x)
         .text("Way of specifying if file generation should be skipped (default: false)")
+      opt[Boolean]("cpp-string_t-typedef").valueName("<true/false>").foreach(x => cppUseStringTTypedef = x)
+        .text("Use string_t as string typedef to support std::string and std::wstring (default: false)")
+      opt[String]("cpp-string-typedef-header").valueName("<header>").foreach(x => cppStringTypedefHeader = Some(x))
+        .text("The header to use for string_t typedef (default: \"\")")
 
       note("\nIdentifier styles (ex: \"FooBar\", \"fooBar\", \"foo_bar\", \"FOO_BAR\", \"m_fooBar\")\n")
       identStyle("ident-java-enum",      c => { javaIdentStyle = javaIdentStyle.copy(enum = c) })
@@ -355,7 +362,9 @@ object Main {
       skipGeneration,
       yamlOutFolder,
       yamlOutFile,
-      yamlPrefix)
+      yamlPrefix,
+      cppUseStringTTypedef,
+      cppStringTypedefHeader)
 
 
     try {

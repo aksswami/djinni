@@ -190,6 +190,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
 
+
+    if (spec.cppUseStringTTypedef) {
+      spec.cppStringTypedefHeader match {
+        case Some(stringHeader) => refs.hpp.add("#include \"" + stringHeader + "\"")
+        case None =>
+      }
+    }
+
     val self = marshal.typename(ident, r)
     val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else (ident.name, " final")
     val actualSelf = marshal.typename(cppName, r)
