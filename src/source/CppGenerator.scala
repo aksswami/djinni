@@ -330,6 +330,13 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       refs.find(c.ty, true)
     })
 
+    if (spec.cppUseStringTTypedef) {
+      spec.cppStringTypedefHeader match {
+        case Some(stringHeader) => refs.hpp.add("#include \"" + stringHeader + "\"")
+        case None =>
+      }
+    }
+
     val self = marshal.typename(ident, i)
     val methodNamesInScope = i.methods.map(m => idCpp.method(m.ident))
 
