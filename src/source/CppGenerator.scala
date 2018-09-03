@@ -144,6 +144,22 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     }
   }
 
+  def defaultValue(p: TypeRef): String = p.resolved.base match {
+   case p: MPrimitive => p.idlName match {
+     case "bool" => "false"
+     case "i8" | "i16" | "i32" | "i64" => "0"
+     case "f32" | "f64" => "0.0f"
+   }
+   case d: MDef if d.defType == DEnum =>
+     val e = d.body.asInstanceOf[Enum]
+     e.options.headOption match {
+       case None => throw new AssertionError("error: head option is empty")
+       case Some(v) => s"${marshal.typename(p.resolved)}::${idCpp.enum(v.ident.name)}"
+     }
+   case d: MDef if d.defType == DRecord => s"${marshal.fieldType(p)}()"
+   case _ => s"${marshal.fieldType(p)}()"
+ }
+
   def generateCppConstants(w: IndentWriter, consts: Seq[Const], selfName: String) = {
     def writeCppConst(w: IndentWriter, ty: TypeRef, v: Any): Unit = v match {
       case l: Long => w.w(l.toString)
@@ -239,6 +255,17 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl(s"friend bool operator<=(const $actualSelf& lhs, const $actualSelf& rhs);")
           w.wl(s"friend bool operator>=(const $actualSelf& lhs, const $actualSelf& rhs);")
         }
+
+        // Default ctor
+        if(r.fields.nonEmpty) {
+         w.wl
+         w.wl(s"$actualSelf()")
+         w.nested {
+           val fieldValues = r.fields.map(par => defaultValue(par.ty))
+           w.wl(s": $actualSelf${fieldValues.mkString("(", ", ", ")")}")
+         }
+         w.wl("{}")
+       }
 
         // Constructor.
         if(r.fields.nonEmpty) {
